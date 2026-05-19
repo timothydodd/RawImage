@@ -1,0 +1,567 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RawImage.ViewModels"
+        xmlns:v="using:RawImage.Views"
+        x:Class="RawImage.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="RawImage"
+        Icon="/Assets/Icons/logo.ico"
+        Width="1024" Height="768"
+        MinWidth="400" MinHeight="300"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="BorderOnly"
+        Background="#282a36"
+        DragDrop.AllowDrop="True">
+
+    <Window.Styles>
+        <Style Selector="Border.spinner">
+            <Style.Animations>
+                <Animation Duration="0:0:1" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="RotateTransform.Angle" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="RotateTransform.Angle" Value="360" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </Window.Styles>
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Left" Command="{Binding FileBrowser.SelectPreviousCommand}" />
+        <KeyBinding Gesture="Right" Command="{Binding FileBrowser.SelectNextCommand}" />
+        <KeyBinding Gesture="F11" Command="{Binding ToggleFullScreenCommand}" />
+        <KeyBinding Gesture="Escape" Command="{Binding CloseBrowseCommand}" />
+    </Window.KeyBindings>
+
+    <Panel>
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Title bar -->
+        <Grid Grid.Row="0" Height="36" Background="#21222c"
+              IsVisible="{Binding !IsFullScreen}"
+              Name="TitleBar">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Logo/Hamburger Menu Button -->
+            <Button Grid.Column="0"
+                    Width="42" Height="36"
+                    Background="Transparent"
+                    CornerRadius="0"
+                    Padding="0"
+                    VerticalContentAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Name="LogoButton">
+                <!-- White "Ri" logo text -->
+                <TextBlock Text="Ri"
+                           FontWeight="Bold"
+                           FontSize="16"
+                           Foreground="#f8f8f2"
+                           VerticalAlignment="Center" />
+                <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                        <!-- File section -->
+                        <MenuItem Header="Browse..." Command="{Binding OpenBrowseCommand}" />
+                        <MenuItem Header="Open in Explorer" Command="{Binding OpenInExplorerCommand}" />
+                        <MenuItem Header="Export..." Click="OnExportClick" />
+                        <Separator />
+                        <!-- View section -->
+                        <MenuItem Header="Full Screen (F11)" Name="MenuFullScreen" Command="{Binding ToggleFullScreenCommand}" />
+                        <Separator />
+                        <!-- Quality section -->
+                        <MenuItem Header="Auto Quality" Name="MenuFilterAuto" Command="{Binding SetFilterAutoCommand}" />
+                        <MenuItem Header="High Quality" Name="MenuFilterHigh" Command="{Binding SetFilterHighCommand}" />
+                        <MenuItem Header="Nearest Neighbor" Name="MenuFilterNear" Command="{Binding SetFilterNearCommand}" />
+                        <Separator />
+                        <MenuItem Header="File Associations..." Command="{Binding OpenFileAssociationsCommand}" IsVisible="{Binding IsWindows}" />
+                        <Separator />
+                        <MenuItem Header="About RawImage..." Click="OnAboutClick" />
+                        <MenuItem Header="Exit" Click="OnExitClick" />
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+
+            <!-- File name in center -->
+            <TextBlock Grid.Column="1"
+                       Text="{Binding CurrentFileName}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontSize="12"
+                       Foreground="#f8f8f2"
+                       TextTrimming="CharacterEllipsis" />
+
+            <!-- Window buttons -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="0">
+                <Button Width="46" Height="36"
+                        Click="OnMinimizeClick"
+                        Background="Transparent"
+                        CornerRadius="0"
+                        ToolTip.Tip="Minimize">
+                    <!-- Minimize: horizontal bar -->
+                    <PathIcon Data="M4,11 L20,11 L20,13 L4,13 Z" Width="12" Height="12" Foreground="#f8f8f2" />
+                </Button>
+                <Button Width="46" Height="36"
+                        Click="OnMaximizeClick"
+                        Background="Transparent"
+                        CornerRadius="0"
+                        Name="MaximizeButton"
+                        ToolTip.Tip="Maximize">
+                    <Panel>
+                        <!-- Maximize: square outline (shown when not maximized) -->
+                        <PathIcon Name="MaximizeIcon" Data="M4,4 L20,4 L20,20 L4,20 Z M6,6 L6,18 L18,18 L18,6 Z" Width="11" Height="11" Foreground="#f8f8f2" />
+                        <!-- Restore: overlapping squares (shown when maximized) -->
+                        <PathIcon Name="RestoreIcon" Data="M4,8 L4,20 L16,20 L16,8 Z M6,10 L14,10 L14,18 L6,18 Z M8,4 L8,6 L18,6 L18,16 L20,16 L20,4 Z" Width="11" Height="11" Foreground="#f8f8f2" IsVisible="False" />
+                    </Panel>
+                </Button>
+                <Button Classes="close"
+                        Width="46" Height="36"
+                        Click="OnCloseClick"
+                        Background="Transparent"
+                        CornerRadius="0"
+                        ToolTip.Tip="Close">
+                    <!-- Close: X shape -->
+                    <PathIcon Data="M18.3,5.71 L12,12 L5.71,5.71 L5,6.41 L11.29,12.71 L5,19 L5.71,19.71 L12,13.41 L18.29,19.71 L19,19 L12.71,12.71 L19,6.41 Z" Width="11" Height="11" Foreground="#f8f8f2" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main content -->
+        <Grid Grid.Row="1" Name="MainContent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" MinWidth="100" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- File browser -->
+            <Border Grid.Column="0" IsVisible="{Binding ShowFileBrowser}">
+                <v:FileBrowser DataContext="{Binding FileBrowser}" />
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Width="4"
+                          IsVisible="{Binding ShowFileBrowser}"
+                          Background="#21222c" />
+
+            <!-- Image viewer -->
+            <Border Grid.Column="2" ClipToBounds="True">
+                <Border.Background>
+                    <DrawingBrush TileMode="Tile"
+                                  DestinationRect="0,0,16,16">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing Brush="#303241">
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,16,16" />
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                                <GeometryDrawing Brush="#282a36">
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,8,8" />
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                                <GeometryDrawing Brush="#282a36">
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="8,8,8,8" />
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Border.Background>
+                <Panel Name="ImageViewport" ClipToBounds="True" Background="Transparent">
+                    <!-- Tiny loading spinner -->
+                    <Border Classes="spinner"
+                            Width="20" Height="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding IsImageLoading}"
+                            RenderTransformOrigin="50%,50%">
+                        <Border.RenderTransform>
+                            <RotateTransform />
+                        </Border.RenderTransform>
+                        <PathIcon Data="M12,4 A8,8 0 1,1 4,12"
+                                  Width="20" Height="20"
+                                  Foreground="#bd93f9" />
+                    </Border>
+                    <Panel Name="ImageContainer"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+
+                        <!-- Main image -->
+                        <Image Name="MainImage"
+                               Source="{Binding CurrentImage}"
+                               Width="{Binding ImageWidth}"
+                               Height="{Binding ImageHeight}"
+                               Stretch="Fill" />
+
+                        <Panel.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+                                <TranslateTransform />
+                            </TransformGroup>
+                        </Panel.RenderTransform>
+                    </Panel>
+                </Panel>
+            </Border>
+
+            <!-- Info panel -->
+            <Border Grid.Column="3" Width="200" IsVisible="{Binding ShowInfoPanel}">
+                <v:ImageInfoPanel DataContext="{Binding ImageInfo}" />
+            </Border>
+        </Grid>
+
+        <!-- Bottom bar -->
+        <Grid Grid.Row="2" Height="36" Background="#21222c"
+              IsVisible="{Binding !IsFullScreen}"
+              Name="BottomBar">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Panel toggle buttons -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="8,0" Spacing="4">
+                <Button Width="36" Height="28"
+                        Command="{Binding ToggleFileBrowserCommand}"
+                        ToolTip.Tip="Toggle File Browser"
+                        Padding="0"
+                        CornerRadius="6">
+                    <!-- Folder outline icon -->
+                    <PathIcon Data="M20,6 L12,6 L10,4 L4,4 C2.9,4 2,4.9 2,6 L2,18 C2,19.1 2.9,20 4,20 L20,20 C21.1,20 22,19.1 22,18 L22,8 C22,6.9 21.1,6 20,6 Z M20,18 L4,18 L4,6 L9.17,6 L11.17,8 L20,8 L20,18 Z"
+                              Width="14" Height="14"
+                              Foreground="#f8f8f2" />
+                </Button>
+                <Button Width="36" Height="28"
+                        Command="{Binding ToggleInfoPanelCommand}"
+                        ToolTip.Tip="Toggle Info Panel"
+                        Padding="0"
+                        CornerRadius="6">
+                    <!-- Info outline icon -->
+                    <PathIcon Data="M11,7 L13,7 L13,9 L11,9 L11,7 Z M11,11 L13,11 L13,17 L11,17 L11,11 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z"
+                              Width="14" Height="14"
+                              Foreground="#f8f8f2" />
+                </Button>
+            </StackPanel>
+
+            <!-- Zoom controls -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0" Spacing="6">
+                <Button Width="32" Height="28"
+                        Command="{Binding ToggleFitToWindowCommand}"
+                        ToolTip.Tip="Fit to Window"
+                        Padding="0"
+                        CornerRadius="6"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center">
+                    <!-- Fit/expand icon -->
+                    <PathIcon Data="M4,4 L4,8 L2,8 L2,2 L8,2 L8,4 L4,4 Z M20,4 L16,4 L16,2 L22,2 L22,8 L20,8 L20,4 Z M4,20 L8,20 L8,22 L2,22 L2,16 L4,16 L4,20 Z M20,20 L20,16 L22,16 L22,22 L16,22 L16,20 L20,20 Z"
+                              Width="14" Height="14"
+                              Foreground="{Binding FitToWindow, Converter={x:Static v:Converters.ToggleColorConverter}}" />
+                </Button>
+
+                <Border Background="#3b3d4a" CornerRadius="6" Height="28">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Name="ZoomTextBox"
+                                 Text="{Binding Zoom, StringFormat={}{0:F2}}"
+                                 Width="50"
+                                 Height="28"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 HorizontalContentAlignment="Center"
+                                 VerticalContentAlignment="Center"
+                                 FontSize="11"
+                                 Padding="8,4" />
+                        <Button Name="ZoomDropdownButton"
+                                Width="24"
+                                Height="28"
+                                Padding="0"
+                                Background="Transparent"
+                                CornerRadius="0,6,6,0"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center">
+                            <!-- Chevron up icon -->
+                            <PathIcon Data="M7.41,15.41 L12,10.83 L16.59,15.41 L18,14 L12,8 L6,14 Z"
+                                      Width="10" Height="10"
+                                      Foreground="#6272a4" />
+                            <Button.Flyout>
+                                <Flyout Placement="Top">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <Button Content="1x" Width="32" Height="28" Click="OnZoom1xClick"
+                                                ToolTip.Tip="Reset to 100%" FontSize="11" Padding="0" CornerRadius="6"
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                        <Button Content="2x" Width="32" Height="28" Click="OnZoom2xClick"
+                                                FontSize="11" Padding="0" CornerRadius="6"
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                        <Button Content="4x" Width="32" Height="28" Click="OnZoom4xClick"
+                                                FontSize="11" Padding="0" CornerRadius="6"
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+    </Grid>
+
+    <!-- Browse Overlay -->
+    <Border IsVisible="{Binding ShowBrowseOverlay}"
+            Background="#E0282a36">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="40">
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#21222c" CornerRadius="8,8,0,0" Padding="16,12">
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="Browse Images"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="#f8f8f2"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1"
+                            Command="{Binding BrowsePanel.ToggleHistoryCommand}"
+                            Background="Transparent"
+                            CornerRadius="6"
+                            Padding="8,4"
+                            Margin="12,0,0,0"
+                            ToolTip.Tip="Recent Files">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <!-- Clock/history icon -->
+                            <PathIcon Data="M13,3 C8.03,3 4,7.03 4,12 L1,12 L4.89,15.89 L4.96,16.03 L9,12 L6,12 C6,8.13 9.13,5 13,5 C16.87,5 20,8.13 20,12 C20,15.87 16.87,19 13,19 C11.07,19 9.32,18.21 8.06,16.94 L6.64,18.36 C8.27,19.99 10.51,21 13,21 C17.97,21 22,16.97 22,12 C22,7.03 17.97,3 13,3 Z M12,8 L12,13 L16.28,15.54 L17,14.33 L13.5,12.25 L13.5,8 L12,8 Z"
+                                      Width="14" Height="14"
+                                      Foreground="{Binding BrowsePanel.ShowHistory, Converter={x:Static v:Converters.ToggleColorConverter}}" />
+                            <TextBlock Text="History"
+                                       FontSize="12"
+                                       Foreground="{Binding BrowsePanel.ShowHistory, Converter={x:Static v:Converters.ToggleColorConverter}}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="3"
+                            Command="{Binding CloseBrowseCommand}"
+                            Background="Transparent"
+                            CornerRadius="6"
+                            Padding="8,4"
+                            ToolTip.Tip="Close">
+                        <PathIcon Data="M19,6.41 L17.59,5 L12,10.59 L6.41,5 L5,6.41 L10.59,12 L5,17.59 L6.41,19 L12,13.41 L17.59,19 L19,17.59 L13.41,12 Z"
+                                  Width="12" Height="12"
+                                  Foreground="#6272a4" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <Panel Grid.Row="1" Background="#21222c">
+                <!-- Folder browser view -->
+                <Grid ColumnDefinitions="250,Auto,*" IsVisible="{Binding !BrowsePanel.ShowHistory}">
+                    <!-- Folder tree -->
+                    <Border Grid.Column="0" Background="#282a36" Margin="8">
+                        <Grid RowDefinitions="Auto,*">
+                            <TextBlock Grid.Row="0"
+                                       Text="Folders"
+                                       FontWeight="Medium"
+                                       FontSize="11"
+                                       Foreground="#6272a4"
+                                       Margin="12,10" />
+                            <TreeView Grid.Row="1"
+                                      ItemsSource="{Binding BrowsePanel.Folders}"
+                                      SelectedItem="{Binding BrowsePanel.SelectedFolder}"
+                                      Background="Transparent"
+                                      Margin="4,0,4,8">
+                                <TreeView.ItemTemplate>
+                                    <TreeDataTemplate x:DataType="vm:FolderItem" ItemsSource="{Binding Children}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="2,4">
+                                            <Canvas Width="16" Height="16">
+                                                <Path Fill="#ffb86c"
+                                                      Data="M10,4 L4,4 C2.89,4 2,4.89 2,6 L2,18 C2,19.1 2.9,20 4,20 L20,20 C21.1,20 22,19.1 22,18 L22,8 C22,6.9 21.1,6 20,6 L12,6 Z"
+                                                      Stretch="Uniform"
+                                                      Width="16" Height="16" />
+                                            </Canvas>
+                                            <TextBlock Text="{Binding Name}"
+                                                       Foreground="#f8f8f2"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </TreeDataTemplate>
+                                </TreeView.ItemTemplate>
+                            </TreeView>
+                        </Grid>
+                    </Border>
+
+                    <!-- Splitter -->
+                    <GridSplitter Grid.Column="1" Width="4" Background="Transparent" />
+
+                    <!-- Image tiles -->
+                    <Border Grid.Column="2" Background="#282a36" Margin="0,8,8,8">
+                        <Grid RowDefinitions="Auto,*">
+                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="12,8">
+                                <Button Grid.Column="0"
+                                        Command="{Binding BrowsePanel.NavigateUpCommand}"
+                                        Background="Transparent"
+                                        CornerRadius="6"
+                                        Padding="6,4"
+                                        ToolTip.Tip="Go up">
+                                    <PathIcon Data="M14,7L9,12L14,17V7Z" Width="14" Height="14" Foreground="#f8f8f2" />
+                                </Button>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding BrowsePanel.CurrentPath}"
+                                           FontSize="11"
+                                           Foreground="#6272a4"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="8,0,0,0" />
+                            </Grid>
+
+                            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding BrowsePanel.Images}" Margin="8,0,8,8">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:ImageTile">
+                                            <Border Width="120" Height="140"
+                                                    Background="#1e1f29"
+                                                    CornerRadius="8"
+                                                    Padding="8"
+                                                    Margin="4"
+                                                    Cursor="Hand"
+                                                    PointerPressed="OnBrowseTilePressed">
+                                                <Grid RowDefinitions="*,Auto">
+                                                    <Border Grid.Row="0"
+                                                            Background="#282a36"
+                                                            CornerRadius="6"
+                                                            ClipToBounds="True">
+                                                        <Panel>
+                                                            <TextBlock Text="..."
+                                                                       FontSize="18"
+                                                                       Foreground="#6272a4"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"
+                                                                       IsVisible="{Binding IsLoading}" />
+                                                            <Image Source="{Binding Thumbnail}"
+                                                                   Stretch="Uniform"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding !IsLoading}" />
+                                                        </Panel>
+                                                    </Border>
+                                                    <TextBlock Grid.Row="1"
+                                                               Text="{Binding Name}"
+                                                               FontSize="10"
+                                                               Foreground="#f8f8f2"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,6,0,0" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <!-- Empty state -->
+                            <TextBlock Grid.Row="1"
+                                       Text="Select a folder to view images"
+                                       FontSize="13"
+                                       Foreground="#6272a4"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding !BrowsePanel.Images.Count}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- History view -->
+                <Border Background="#282a36" Margin="8" IsVisible="{Binding BrowsePanel.ShowHistory}">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Grid.Row="0"
+                                   Text="Recently Opened"
+                                   FontWeight="Medium"
+                                   FontSize="11"
+                                   Foreground="#6272a4"
+                                   Margin="12,10" />
+
+                        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding BrowsePanel.HistoryImages}" Margin="8,0,8,8">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:ImageTile">
+                                        <Border Width="120" Height="140"
+                                                Background="#1e1f29"
+                                                CornerRadius="8"
+                                                Padding="8"
+                                                Margin="4"
+                                                Cursor="Hand"
+                                                PointerPressed="OnBrowseTilePressed">
+                                            <Grid RowDefinitions="*,Auto">
+                                                <Border Grid.Row="0"
+                                                        Background="#282a36"
+                                                        CornerRadius="6"
+                                                        ClipToBounds="True">
+                                                    <Panel>
+                                                        <TextBlock Text="..."
+                                                                   FontSize="18"
+                                                                   Foreground="#6272a4"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding IsLoading}" />
+                                                        <Image Source="{Binding Thumbnail}"
+                                                               Stretch="Uniform"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               IsVisible="{Binding !IsLoading}" />
+                                                    </Panel>
+                                                </Border>
+                                                <TextBlock Grid.Row="1"
+                                                           Text="{Binding Name}"
+                                                           FontSize="10"
+                                                           Foreground="#f8f8f2"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           HorizontalAlignment="Center"
+                                                           Margin="0,6,0,0" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- Empty state -->
+                        <TextBlock Grid.Row="1"
+                                   Text="No recent files"
+                                   FontSize="13"
+                                   Foreground="#6272a4"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding !BrowsePanel.HistoryImages.Count}" />
+                    </Grid>
+                </Border>
+            </Panel>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#21222c" CornerRadius="0,0,8,8" Padding="16,10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding BrowsePanel.Images.Count, StringFormat='{}{0} images'}"
+                               FontSize="11"
+                               Foreground="#6272a4"
+                               VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+    </Panel>
+</Window>

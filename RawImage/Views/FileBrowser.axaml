@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RawImage.ViewModels"
+             xmlns:m="using:RawImage.Models"
+             xmlns:v="using:RawImage.Views"
+             x:Class="RawImage.Views.FileBrowser"
+             x:DataType="vm:FileBrowserViewModel"
+             Background="#282a36">
+
+    <UserControl.Styles>
+        <Style Selector="Border.skeleton">
+            <Style.Animations>
+                <Animation Duration="0:0:1.2" IterationCount="Infinite" PlaybackDirection="Alternate">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0.35" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="0.85" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Browse button -->
+        <Button Grid.Row="0"
+                Margin="8,8,8,4"
+                Padding="10,8"
+                CornerRadius="6"
+                Background="#1e1f29"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Left"
+                Click="OnBrowseClick">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <!-- Folder open icon -->
+                <PathIcon Data="M19,20 L4,20 C2.89,20 2,19.1 2,18 L2,6 C2,4.9 2.89,4 4,4 L10,4 L12,6 L19,6 C20.1,6 21,6.9 21,8 L21,11 L4,11 L4,18 L6.14,12 L23,12 L20.86,18.14 C20.57,18.95 19.8,19.5 19,20 Z"
+                          Width="14" Height="14"
+                          Foreground="#6272a4" />
+                <TextBlock Text="Browse..."
+                           Foreground="#f8f8f2"
+                           FontSize="12"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+        <!-- Search box -->
+        <Grid Grid.Row="1" Margin="8,4,8,8">
+            <TextBox Text="{Binding SearchText}"
+                     Watermark="Search files..."
+                     Padding="10,8,32,8"
+                     CornerRadius="6"
+                     Background="#1e1f29"
+                     BorderBrush="#44475a"
+                     BorderThickness="1" />
+            <!-- Search icon -->
+            <PathIcon Data="M9.5,3 C13.09,3 16,5.91 16,9.5 C16,11.11 15.41,12.59 14.44,13.73 L14.71,14 L15.5,14 L20.5,19 L19,20.5 L14,15.5 L14,14.71 L13.73,14.44 C12.59,15.41 11.11,16 9.5,16 C5.91,16 3,13.09 3,9.5 C3,5.91 5.91,3 9.5,3 Z M9.5,5 C7,5 5,7 5,9.5 C5,12 7,14 9.5,14 C12,14 14,12 14,9.5 C14,7 12,5 9.5,5 Z"
+                       Width="14" Height="14"
+                       Foreground="#6272a4"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Margin="0,0,12,0"
+                       IsHitTestVisible="False" />
+        </Grid>
+
+        <!-- File list -->
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Items}" Margin="4,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="m:FileNode">
+                        <Border Width="80" Height="100"
+                                Background="{Binding IsSelected, Converter={x:Static v:Converters.SelectionBackgroundConverter}, FallbackValue=Transparent}"
+                                CornerRadius="6"
+                                Padding="4"
+                                Margin="2"
+                                Cursor="Hand"
+                                PointerPressed="OnItemPressed">
+                            <Grid RowDefinitions="*,Auto">
+                                <!-- Thumbnail -->
+                                <Border Grid.Row="0"
+                                        CornerRadius="4"
+                                        ClipToBounds="True"
+                                        HorizontalAlignment="Center"
+                                        Width="64" Height="64">
+                                    <Panel>
+                                        <Border Classes="skeleton"
+                                                Background="#3a3d4a"
+                                                CornerRadius="4"
+                                                IsVisible="{Binding IsThumbnailLoading}" />
+                                        <Image Source="{Binding Thumbnail}"
+                                               Stretch="Uniform"
+                                               IsVisible="{Binding !IsThumbnailLoading}" />
+                                    </Panel>
+                                </Border>
+
+                                <!-- Name -->
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding Name}"
+                                           Foreground="#f8f8f2"
+                                           FontSize="10"
+                                           TextTrimming="CharacterEllipsis"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,4,0,0" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>

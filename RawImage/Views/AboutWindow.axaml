@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="RawImage.Views.AboutWindow"
+        Title="About RawImage"
+        Width="380" Height="280"
+        CanResize="False"
+        Background="#282a36"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="*,Auto" Margin="24">
+        <StackPanel Grid.Row="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="10">
+            <TextBlock Text="Ri"
+                       FontWeight="Bold"
+                       FontSize="44"
+                       Foreground="#bd93f9"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="RawImage"
+                       FontWeight="SemiBold"
+                       FontSize="18"
+                       Foreground="#f8f8f2"
+                       HorizontalAlignment="Center" />
+            <TextBlock x:Name="VersionText"
+                       FontSize="12"
+                       Foreground="#6272a4"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Cross-platform image viewer"
+                       FontSize="11"
+                       Foreground="#6272a4"
+                       HorizontalAlignment="Center"
+                       Margin="0,8,0,0" />
+        </StackPanel>
+
+        <Button Grid.Row="1"
+                Content="Close"
+                Click="OnCloseClick"
+                HorizontalAlignment="Right"
+                Padding="20,8"
+                CornerRadius="6" />
+    </Grid>
+</Window>

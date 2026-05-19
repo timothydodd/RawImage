@@ -1,0 +1,233 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RawImage.ViewModels"
+             x:Class="RawImage.Views.ImageInfoPanel"
+             x:DataType="vm:ImageInfoPanelViewModel"
+             Background="#21222c">
+
+    <Grid RowDefinitions="Auto,*" Margin="0,8,8,8">
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="12,4,12,12">
+            <TextBlock Text="Info"
+                       FontWeight="SemiBold"
+                       Foreground="#f8f8f2"
+                       FontSize="14"
+                       VerticalAlignment="Center" />
+            <Button HorizontalAlignment="Right"
+                    Width="24" Height="24"
+                    Padding="0"
+                    Background="Transparent"
+                    CornerRadius="6"
+                    Click="OnCloseClick"
+                    ToolTip.Tip="Close">
+                <PathIcon Data="M19,6.41 L17.59,5 L12,10.59 L6.41,5 L5,6.41 L10.59,12 L5,17.59 L6.41,19 L12,13.41 L17.59,19 L19,17.59 L13.41,12 Z"
+                          Width="10" Height="10"
+                          Foreground="#6272a4" />
+            </Button>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="8" Margin="8,0">
+
+                <!-- Color Preview Card -->
+                <Border Background="#282a36" CornerRadius="8" Padding="12">
+                    <Grid RowDefinitions="Auto,Auto,Auto">
+                        <!-- Large color swatch -->
+                        <Border Grid.Row="0"
+                                Height="48"
+                                CornerRadius="6"
+                                BorderBrush="#44475a"
+                                BorderThickness="1">
+                            <Border.Background>
+                                <SolidColorBrush Color="{Binding CurrentColor}" />
+                            </Border.Background>
+                        </Border>
+
+                        <!-- Hex value -->
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding ColorHex}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   FontFamily="Consolas, monospace"
+                                   Foreground="#f8f8f2"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,6" />
+
+                        <!-- RGB values -->
+                        <Grid Grid.Row="2" ColumnDefinitions="*,*,*">
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding Red}"
+                                           FontSize="14"
+                                           FontWeight="Medium"
+                                           Foreground="#ff5555"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="R"
+                                           FontSize="10"
+                                           Foreground="#6272a4"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding Green}"
+                                           FontSize="14"
+                                           FontWeight="Medium"
+                                           Foreground="#50fa7b"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="G"
+                                           FontSize="10"
+                                           Foreground="#6272a4"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding Blue}"
+                                           FontSize="14"
+                                           FontWeight="Medium"
+                                           Foreground="#8be9fd"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="B"
+                                           FontSize="10"
+                                           Foreground="#6272a4"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Image Info Card -->
+                <Border Background="#282a36" CornerRadius="8" Padding="12">
+                    <StackPanel Spacing="12">
+                        <!-- Dimensions -->
+                        <Grid ColumnDefinitions="Auto,*">
+                            <PathIcon Grid.Column="0"
+                                      Data="M21,17H3V5H21M21,3H3A2,2 0 0,0 1,5V17A2,2 0 0,0 3,19H8V21H16V19H21A2,2 0 0,0 23,17V5A2,2 0 0,0 21,3Z"
+                                      Width="16" Height="16"
+                                      Foreground="#bd93f9"
+                                      VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                <TextBlock Text="Dimensions"
+                                           FontSize="10"
+                                           Foreground="#6272a4" />
+                                <TextBlock Text="{Binding DimensionsText}"
+                                           FontSize="13"
+                                           FontWeight="Medium"
+                                           Foreground="#f8f8f2" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Position -->
+                        <Grid ColumnDefinitions="Auto,*">
+                            <PathIcon Grid.Column="0"
+                                      Data="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+                                      Width="16" Height="16"
+                                      Foreground="#ffb86c"
+                                      VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                <TextBlock Text="Cursor Position"
+                                           FontSize="10"
+                                           Foreground="#6272a4" />
+                                <TextBlock Text="{Binding PositionText}"
+                                           FontSize="13"
+                                           FontWeight="Medium"
+                                           Foreground="#f8f8f2" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Color History Card -->
+                <Border Background="#282a36" CornerRadius="8" Padding="12">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="Color History"
+                                       FontSize="11"
+                                       FontWeight="Medium"
+                                       Foreground="#6272a4"
+                                       VerticalAlignment="Center" />
+                            <Button Grid.Column="1"
+                                    Command="{Binding ClearHistoryCommand}"
+                                    Background="Transparent"
+                                    Padding="4,2"
+                                    CornerRadius="4"
+                                    IsVisible="{Binding ColorHistory.Count}">
+                                <TextBlock Text="Clear"
+                                           FontSize="10"
+                                           Foreground="#6272a4" />
+                            </Button>
+                        </Grid>
+
+                        <!-- History items -->
+                        <ItemsControl ItemsSource="{Binding ColorHistory}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:ColorHistoryItem">
+                                    <Border Background="#1e1f29"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Margin="0,2">
+                                        <Grid RowDefinitions="Auto,Auto">
+                                            <!-- Top row: swatch, hex, remove button -->
+                                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                                                <!-- Color swatch -->
+                                                <Border Grid.Column="0"
+                                                        Width="28" Height="28"
+                                                        CornerRadius="4"
+                                                        BorderBrush="#44475a"
+                                                        BorderThickness="1">
+                                                    <Border.Background>
+                                                        <SolidColorBrush Color="{Binding Color}" />
+                                                    </Border.Background>
+                                                </Border>
+
+                                                <!-- Hex and position -->
+                                                <StackPanel Grid.Column="1" Margin="8,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Hex}"
+                                                               FontSize="12"
+                                                               FontFamily="Consolas, monospace"
+                                                               Foreground="#f8f8f2" />
+                                                    <TextBlock FontSize="9" Foreground="#6272a4">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}({0}, {1})">
+                                                                <Binding Path="X" />
+                                                                <Binding Path="Y" />
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </StackPanel>
+
+                                                <!-- Remove button -->
+                                                <Button Grid.Column="2"
+                                                        Click="OnRemoveHistoryItemClick"
+                                                        Background="Transparent"
+                                                        Padding="4"
+                                                        CornerRadius="4"
+                                                        VerticalAlignment="Top">
+                                                    <PathIcon Data="M19,6.41 L17.59,5 L12,10.59 L6.41,5 L5,6.41 L10.59,12 L5,17.59 L6.41,19 L12,13.41 L17.59,19 L19,17.59 L13.41,12 Z"
+                                                              Width="8" Height="8"
+                                                              Foreground="#6272a4" />
+                                                </Button>
+                                            </Grid>
+
+                                            <!-- Bottom row: RGB values -->
+                                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,6,0,0" HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding Red}" FontSize="10" Foreground="#ff5555" Margin="0,0,4,0" />
+                                                <TextBlock Text="{Binding Green}" FontSize="10" Foreground="#50fa7b" Margin="4,0" />
+                                                <TextBlock Text="{Binding Blue}" FontSize="10" Foreground="#8be9fd" Margin="4,0,0,0" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Hint text -->
+                        <TextBlock Text="Ctrl+Click to save color"
+                                   FontSize="10"
+                                   Foreground="#6272a4"
+                                   HorizontalAlignment="Center"
+                                   IsVisible="{Binding !ColorHistory.Count}" />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

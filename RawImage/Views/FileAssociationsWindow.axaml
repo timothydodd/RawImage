@@ -1,0 +1,86 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RawImage.ViewModels"
+        x:Class="RawImage.Views.FileAssociationsWindow"
+        x:DataType="vm:FileAssociationsViewModel"
+        Title="File Associations"
+        Width="460" Height="520"
+        MinWidth="400" MinHeight="420"
+        Background="#282a36"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#21222c" Padding="20,16">
+            <StackPanel Spacing="6">
+                <TextBlock Text="File Associations"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#f8f8f2" />
+                <TextBlock Text="Pick which image formats RawImage can open. Windows keeps rendering its built-in thumbnail previews — only the &quot;Open with&quot; list changes."
+                           FontSize="11"
+                           Foreground="#6272a4"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Padding="20,16">
+            <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Select all"
+                            Command="{Binding SelectAllCommand}"
+                            Padding="12,6"
+                            CornerRadius="6"
+                            FontSize="12" />
+                    <Button Content="Clear all"
+                            Command="{Binding ClearAllCommand}"
+                            Padding="12,6"
+                            CornerRadius="6"
+                            FontSize="12" />
+                </StackPanel>
+
+                <ItemsControl ItemsSource="{Binding Extensions}" Margin="0,8,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:ExtensionEntry">
+                            <Border Background="#21222c"
+                                    CornerRadius="6"
+                                    Padding="14,10"
+                                    Margin="0,0,0,4">
+                                <CheckBox IsChecked="{Binding IsAssociated}"
+                                          Foreground="#f8f8f2"
+                                          FontSize="13"
+                                          Content="{Binding Extension}" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="#21222c" Padding="20,12">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                           Text="To make RawImage the actual default, Windows requires a confirmation in Settings."
+                           FontSize="11"
+                           Foreground="#6272a4"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,10" />
+                <Button Grid.Row="1" Grid.Column="0"
+                        Content="Open Windows Default Apps"
+                        Command="{Binding OpenDefaultAppsSettingsCommand}"
+                        HorizontalAlignment="Left"
+                        Padding="12,8"
+                        CornerRadius="6"
+                        FontSize="12" />
+                <Button Grid.Row="1" Grid.Column="1"
+                        Content="Close"
+                        Click="OnCloseClick"
+                        Padding="20,8"
+                        CornerRadius="6"
+                        FontSize="12" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

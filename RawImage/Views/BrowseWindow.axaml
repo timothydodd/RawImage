@@ -1,0 +1,171 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RawImage.ViewModels"
+        x:Class="RawImage.Views.BrowseWindow"
+        x:DataType="vm:BrowseWindowViewModel"
+        Title="Browse Images"
+        Width="900" Height="600"
+        MinWidth="600" MinHeight="400"
+        Background="#282a36"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header / Path bar -->
+        <Border Grid.Row="0" Background="#21222c" Padding="12,8">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0"
+                        Command="{Binding NavigateUpCommand}"
+                        Background="Transparent"
+                        CornerRadius="6"
+                        Padding="8,6"
+                        ToolTip.Tip="Go up">
+                    <PathIcon Data="M14,7L9,12L14,17V7Z" Width="16" Height="16" Foreground="#f8f8f2" />
+                </Button>
+                <TextBox Grid.Column="1"
+                         Text="{Binding CurrentPath}"
+                         IsReadOnly="True"
+                         Margin="8,0"
+                         Background="#1e1f29"
+                         BorderThickness="0"
+                         CornerRadius="6"
+                         Padding="12,8"
+                         FontSize="12"
+                         Foreground="#f8f8f2" />
+            </Grid>
+        </Border>
+
+        <!-- Main content -->
+        <Grid Grid.Row="1" ColumnDefinitions="250,Auto,*">
+            <!-- Folder tree -->
+            <Border Grid.Column="0" Background="#21222c" Margin="8,8,0,8" CornerRadius="8">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0"
+                               Text="Folders"
+                               FontWeight="SemiBold"
+                               FontSize="12"
+                               Foreground="#6272a4"
+                               Margin="12,10" />
+                    <TreeView Grid.Row="1"
+                              ItemsSource="{Binding Folders}"
+                              SelectedItem="{Binding SelectedFolder}"
+                              Background="Transparent"
+                              Margin="4,0,4,8">
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate x:DataType="vm:FolderItem" ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="2,4">
+                                    <Canvas Width="16" Height="16">
+                                        <Path Fill="#ffb86c"
+                                              Data="M10,4 L4,4 C2.89,4 2,4.89 2,6 L2,18 C2,19.1 2.9,20 4,20 L20,20 C21.1,20 22,19.1 22,18 L22,8 C22,6.9 21.1,6 20,6 L12,6 Z"
+                                              Stretch="Uniform"
+                                              Width="16" Height="16" />
+                                    </Canvas>
+                                    <TextBlock Text="{Binding Name}"
+                                               Foreground="#f8f8f2"
+                                               FontSize="12"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Grid>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Width="4" Background="Transparent" />
+
+            <!-- Image tiles -->
+            <Border Grid.Column="2" Background="#21222c" Margin="0,8,8,8" CornerRadius="8">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0"
+                               Text="Images"
+                               FontWeight="SemiBold"
+                               FontSize="12"
+                               Foreground="#6272a4"
+                               Margin="12,10" />
+
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Images}" Margin="8,0,8,8">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:ImageTile">
+                                    <Border Width="130" Height="150"
+                                            Background="#282a36"
+                                            CornerRadius="8"
+                                            Padding="8"
+                                            Margin="4"
+                                            Cursor="Hand"
+                                            PointerPressed="OnImageTilePressed">
+                                        <Grid RowDefinitions="*,Auto">
+                                            <!-- Thumbnail -->
+                                            <Border Grid.Row="0"
+                                                    Background="#1e1f29"
+                                                    CornerRadius="6"
+                                                    ClipToBounds="True"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch">
+                                                <Panel>
+                                                    <!-- Loading indicator -->
+                                                    <TextBlock Text="..."
+                                                               FontSize="20"
+                                                               Foreground="#6272a4"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               IsVisible="{Binding IsLoading}" />
+                                                    <!-- Thumbnail image -->
+                                                    <Image Source="{Binding Thumbnail}"
+                                                           Stretch="Uniform"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           IsVisible="{Binding !IsLoading}" />
+                                                </Panel>
+                                            </Border>
+
+                                            <!-- File name -->
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding Name}"
+                                                       FontSize="10"
+                                                       Foreground="#f8f8f2"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       HorizontalAlignment="Center"
+                                                       Margin="0,6,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Empty state -->
+                    <TextBlock Grid.Row="1"
+                               Text="Select a folder to view images"
+                               FontSize="14"
+                               Foreground="#6272a4"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding !Images.Count}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="#21222c" Padding="12,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding Images.Count, StringFormat='{}{0} images'}"
+                           FontSize="11"
+                           Foreground="#6272a4"
+                           VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Cancel"
+                            Padding="16,8"
+                            CornerRadius="6"
+                            Click="OnCancelClick" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
